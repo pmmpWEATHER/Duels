@@ -55,27 +55,6 @@ class Duels extends PluginBase implements Listener {
                             $play->dataPacket($play);
     }
     
-    public function setDuelNPC($player,$SkinName){
-        $skin = $player->getSkin();
-        $path = $this->getDataFolder().$SkinName.".png";
-        $img = @imagecreatefrompng($path);
-        $skinbytes = "";
-        $s = (int)@getimagesize($path)[1];
-
-        for($y = 0; $y < $s; $y++) {
-            for($x = 0; $x < 64; $x++) {
-                $colorat = @imagecolorat($img, $x, $y);
-                $a = ((~((int)($colorat >> 24))) << 1) & 0xff;
-                $r = ($colorat >> 16) & 0xff;
-                $g = ($colorat >> 8) & 0xff;
-                $b = $colorat & 0xff;
-                $skinbytes .= chr($r) . chr($g) . chr($b) . chr($a);
-            }
-        }
-        @imagedestroy($img);
-        $player->setSkin(new Skin($skin->getSkinId(), $skinbytes, "", "geometry.".$SkinName,file_get_contents($this->getDataFolder().$SkinName.".json")));
-        $player->sendSkin();
-    }
     
     public function getJoinItem(Player $player) {
 		    $item = Item::get(Item::BED, 0, 1)->setCustomName(TE::GREEN . "Leave match");
