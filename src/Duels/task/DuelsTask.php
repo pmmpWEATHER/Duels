@@ -47,12 +47,67 @@ class DuelsTask extends Task {
 					  $players = $level->getPlayers();
 					  $counttime = $this->plugin->manager->hasArenaCount($arena) ?? 0; 
 					  $online = $this->plugin->manager->hasPlayers($arena)== is_null(null) ? $this->plugin->manager->hasPlayers($arena) : null;  
-					  $resetM = $this->plugin->manager->hasArenaCount($arena) == null ? 0 : $this->plugin->manager->hasArenaCount($arena);
+					  $reset = $this->plugin->manager->hasArenaCount($arena) == null ? 0 : $this->plugin->manager->hasArenaCount($arena);
 					  $new = new Config($this->plugin->getDataFolder() . "WC/".$arena.".yml",Config::YAML);
-            $slots = $the->get("slots");
-      //start a new match     
-      if($this->plugin->isArenaUse($arena)==true) {
-                     $slote = $slots+40; } else {
-                         $slote = $this->plugin->startslot;
-                         }
-				if($counter>=$slote) { 
+                                          $slots = $the->get("slots");
+                                     //start a new match     
+                                     if($this->plugin->isArenaUse($arena)==true) {
+                                        $slot = $slots+40; } else {
+                                        $slot = $this->plugin->startslot;
+                                     }
+				     if($counttime>=$slot) { 
+				
+		                     if(Settings::GAME_STATUS == $config->get($arena."Game")) {
+				        $start = $config->get($arena."ToStartime");
+				        $start--;
+					$config->set($arena."ToStartime", $start);
+                                        $config->save();
+					     
+				    foreach($players as $pl) {
+				      // 10 seconds until game starting
+                                      if($start>=11 && $start <= 40) {
+                                          $this->runningTo($pl,$start,$arena);
+                                      }
+                    
+                                      if($start>=1 && $start <= 10) {
+                                      $time = $start>5 ? "§6".$start : "§c".$start;
+                                      $this->plugin->addSounds($pl,"note.chime",$start);
+                                      $pl->addTitle(" ","§l§eFightning in:\n ".$time,20,40,20);
+
+
+                                     } if($start==0) {
+                                     $this->plugin->score->remove($pl);
+                                     $this->plugin->addSounds($pl,"random.levelup");
+
+                            }
+
+                        }
+					     
+                        if($resetM==0 || $resetM==null || count($players)==0 || (bool)$players == false) {
+
+                         	foreach($players as $pl) { 
+                                    if($this->plugin->isArenaUse($arena)==true) {
+                                      $ares = new Config($this->plugin->getDataFolder()."DATA/MM".$arena.".yml", Config::YAML);
+	                              $author = $ares->get("AUTHOR");
+	                              $this->plugin->deleteCrasts($author);
+	                            }
+                       
+			            $pl->teleport($this->plugin->getServer()->getDefaultLevel()->getSafeSpawn(),0,0);
+                                    $pl->setGameMode(2); }
+
+                                    if($arena=="world") continue;
+
+
+					    $this->plugin->manager->reloadMap($arena);
+
+
+					    $this->plugin->manager->setBlockSign(5,$arena);
+
+
+			$config->set($arena."Game",Settings::GAME_STATUS_DEFAULT);
+
+                        $config->set($arena."ToStartime", Settings::TIME_TO_START_1);
+
+                        $config->set($arena."TeleportTime", Settings::TIME_TELEPORT_2);
+                        $config->set($arena."PlayTime", Settings::TIME_START_3);
+                        $config->set($arena."EndTime", Settings::TIME_END_4);
