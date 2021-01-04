@@ -1,6 +1,6 @@
 name: Duels
 version: 1.14.6
-main: Duels
+main: Duels/Duels
 api: [4.0.0, 3.0.0, 3.0.1, 3.0.2, 3.0.3, 3.0.4, 3.0.5]
 author: WC Team
 description: Implement by WC @WEATHERCRAFTYT1
