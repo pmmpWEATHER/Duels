@@ -8,7 +8,7 @@ use pocketmine\event\Listener;
 use pocketmine\utils\TextFormat as TE;
 use pocketmine\Player;
 use pocketmine\utils\Config;
-use UHCM\score\ScoreAPI;
+use Duels\score\ScoreAPI;
 use pocketmine\item\Item;
 use pocketmine\entity\Skin;
 use pocketmine\item\enchantment\EnchantmentInstance;
