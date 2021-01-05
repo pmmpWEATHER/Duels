@@ -103,7 +103,7 @@ class DuelsTask extends Task {
                                  $config->set($arena."Game",Settings::PRE_TELEPORT_2);
                                  $config->save();
 
-                                } } } else {
+                                } } else {
 
                   	          if(Settings::GAME_STATUS == $config->get($arena."Game")) {
 
@@ -247,14 +247,12 @@ class DuelsTask extends Task {
 	                                                      $this->plugin->deleteCrasts($author);
 	                                                   }
 					                  $this->plugin->manager->reloadMap($arena);
-                                                       } }
-					} } } }
+                                                       } 
+			}
+					} 
+    } 
 
 
-					
-
-
-}
 			
 			 			        
 
