@@ -86,7 +86,7 @@ class DuelsTask extends Task {
 
                          	foreach($players as $pl) { 
                                     if($this->plugin->isArenaUse($arena)==true) {
-                                      $ares = new Config($this->plugin->getDataFolder()."Maps/MM".$arena.".yml", Config::YAML);
+                                      $ares = new Config($this->plugin->getDataFolder()."Extra/MM".$arena.".yml", Config::YAML);
 	                              $author = $ares->get("AUTHOR");
 	                              $this->plugin->deleteCrasts($author);
 	                            }
@@ -106,9 +106,10 @@ class DuelsTask extends Task {
                                     }
                                  $this->plugin->manager->setBlockSign(4,$arena);
                                  $config->set($arena."Game",Settings::PRE_TELEPORT_2);
+			         $config->set($arena."ToStartime", Settings::TIME_TO_START_1);
                                  $config->save();
 
-                                } } else {
+					  } } } else {
 
                   	          if(Settings::GAME_STATUS == $config->get($arena."Game")) {
 
@@ -121,11 +122,17 @@ class DuelsTask extends Task {
 
                   	          }
 				}
+			        if(Settings::PRE_TELEPORT_2 == $config->get($arena."Game")) {
+					$start = $config->get($arena."TeleportTime");
+					$start--;
+					$config->set($arena."TeleportTime", $start);
+                                        $config->save();
+					
 				// Task for starting the match
                                if($resetM==0 || $resetM==null || count($players)==0 || (bool)$players == false) {
                          	   foreach($players as $pl) { 
                                       if($this->plugin->isArenaUse($arena)==true) {
-                                          $ares = new Config($this->plugin->getDataFolder()."Maps/MM".$arena.".yml", Config::YAML);
+                                          $ares = new Config($this->plugin->getDataFolder()."Extra/MM".$arena.".yml", Config::YAML);
 	                                  $author = $ares->get("AUTHOR");
 	                                  $this->plugin->deleteCrasts($author);
 	                                  }
@@ -136,6 +143,10 @@ class DuelsTask extends Task {
 					    $this->plugin->manager->reloadMap($arena);
 					    $this->plugin->manager->setBlockSign(5,$arena);
 				            $config->set($arena."Game",Settings::GAME_STATUS_DEFAULT);
+				            $config->set($arena."ToStartime", Settings::TIME_TO_START_1);
+                                            $config->set($arena."TeleportTime", Settings::TIME_TELEPORT_2);
+                                            $config->set($arena."PlayTime", Settings::TIME_START_3);
+                                            $config->set($arena."EndTime", Settings::TIME_END_4);
 				            $config->save(); } 
 
                                             foreach($players as $pl) {
@@ -163,6 +174,7 @@ class DuelsTask extends Task {
 					     if($start<=0) {
                                                  $this->plugin->manager->setBlockSign(14,$arena);
                                                  $config->set($arena."Game",Settings::PRE_START_3);
+						 $config->set($arena."TeleportTime", Settings::TIME_TELEPORT_2);
                                                  $config->save();
                                              } }
 					 
@@ -185,6 +197,7 @@ class DuelsTask extends Task {
                                                          $player->setHealth(20);
                                                          $player->setFood(20);
                                                          $config->set($arena."Game",Settings::PRE_END_4);
+							 $config->set($arena."PlayTime", Settings::TIME_START_3);
 			                                 $config->save();
 			                                 $this->plugin->manager->setBlockSign(10,$arena);
                                                    }
@@ -193,7 +206,7 @@ class DuelsTask extends Task {
 						// end of game and teleporting players to spawn    
 						if($resetM==0 || $resetM==null || count($players)==0 || (bool)$players == false) {
                                                      if($this->plugin->isArenaUse($arena)==true) {
-                                                          $ares = new Config($this->plugin->getDataFolder()."DATA/MM".$arena.".yml", Config::YAML);
+                                                          $ares = new Config($this->plugin->getDataFolder()."Extra/MM".$arena.".yml", Config::YAML);
 	                                                  $author = $ares->get("AUTHOR");
 	                                                  $this->plugin->deleteCrasts($author);
 	                                             }
@@ -203,7 +216,10 @@ class DuelsTask extends Task {
                                                        if($arena=="world") continue;
 					                   $this->plugin->manager->reloadMap($arena);
 					                   $this->plugin->manager->setBlockSign(5,$arena);
-						           $config->set($arena."Game",Settings::GAME_STATUS_DEFAULT);
+                                                           $config->set($arena."ToStartime", Settings::TIME_TO_START_1);
+                                                           $config->set($arena."TeleportTime", Settings::TIME_TELEPORT_2);
+                                                           $config->set($arena."PlayTime", Settings::TIME_START_3);
+                                                           $config->set($arena."EndTime", Settings::TIME_END_4);
 					                   $config->save(); } 
 						       // Small Scoreboard and Game Task
 	              				       if($start==30*10 ) { 
@@ -226,7 +242,13 @@ class DuelsTask extends Task {
 						       if($start<=0) {
                                                           $this->plugin->manager->setBlockSign(10,$arena);
                                                           $config->set($arena."Game",Settings::PRE_END_4);
+							  $config->set($arena."PlayTime", Settings::TIME_START_3);
                                                           $config->save();
+							  if(Settings::PRE_END_4 == $config->get($arena."Game")) {
+						            $start = $config->get($arena."EndTime");
+						            $start--;
+						            $config->set($arena."EndTime", $start);
+                                                            $config->save();
                                                        } }
                                                       foreach($players as $pl) {
                                                          if(isset($onlines[$pl->getName()])) {
@@ -235,6 +257,7 @@ class DuelsTask extends Task {
                                                          }
                         	                         $pl->sendTip("§aRestarting in:§f ".$start);
                                                       }
+					              
 			
 			                              if($start<=0) {
                         	                         foreach($players as $pl) {                      
@@ -244,10 +267,11 @@ class DuelsTask extends Task {
                                                         }
                                                         $this->plugin->manager->setBlockSign(5,$arena);
                                                         $config->set($arena."Game",Settings::GAME_STATUS_DEFAULT);
+							$config->set($arena."EndTime", Settings::TIME_END_4);
                                                         $config->save();
                                                         if($arena=="world") continue;
                                                            if($this->plugin->isArenaUse($arena)==true) {
-                                                              $ares = new Config($this->plugin->getDataFolder()."Maps/MM".$arena.".yml", Config::YAML);
+                                                              $ares = new Config($this->plugin->getDataFolder()."Extra/MM".$arena.".yml", Config::YAML);
 	                                                      $author = $ares->get("AUTHOR");
 	                                                      $this->plugin->deleteCrasts($author);
 	                                                   }
@@ -255,7 +279,11 @@ class DuelsTask extends Task {
                                                        } 
 			}
 					} 
-    } 
+			}
+		}
+    }
+    
+    }
 
 
 			
