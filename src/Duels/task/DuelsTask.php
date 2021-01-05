@@ -156,7 +156,6 @@ class DuelsTask extends Task {
                                                    if(isset($players2[$pl->getName()])) {
 					              // Start + the top Duelers display
                                                       $pl->setGameMode(0);
-                                                      $this->plugin->manager->getTopDuels($pl);
                                                       $this->plugin->removeItems($pl);
                                                    }
                                               }
@@ -189,6 +188,7 @@ class DuelsTask extends Task {
                                                     if(isset($onlines[$player->getName()])) {
                                                          $player->addTitle("§l§6VICTORY","§r§7You were the last man standing",20,40,20);
                                                          $this->plugin->addSounds($player,"mob.cat.beg");
+							 $this->plugin->manager->getTopDuels($pl);
 			                                 $this->plugin->getServer()->broadcastMessage("§8» §f===§c§lDUELS§r==="); 
 							 $this->plugin->getServer()->broadcastMessage("§6Winner §8#1 §f".$player->getName());
                                                          $this->plugin->getServer()->broadcastMessage("§6Won the game in:§a ".$arena);
