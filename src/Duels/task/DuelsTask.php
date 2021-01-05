@@ -48,7 +48,7 @@ class DuelsTask extends Task {
 					  $counttime = $this->plugin->manager->hasArenaCount($arena) ?? 0; 
 					  $online = $this->plugin->manager->hasPlayers($arena)== is_null(null) ? $this->plugin->manager->hasPlayers($arena) : null;  
 					  $reset = $this->plugin->manager->hasArenaCount($arena) == null ? 0 : $this->plugin->manager->hasArenaCount($arena);
-					  $new = new Config($this->plugin->getDataFolder() . "WC/".$arena.".yml",Config::YAML);
+					  $new = new Config($this->plugin->getDataFolder() . "Maps/".$arena.".yml",Config::YAML);
                                           $slots = $the->get("slots");
                                      //start a new match     
                                      if($this->plugin->isArenaUse($arena)==true) {
@@ -56,6 +56,11 @@ class DuelsTask extends Task {
                                         $slot = $this->plugin->startslot;
                                      }
 				     if($counttime>=$slot) { 
+					  if(Settings::GAME_STATUS == $config->get($arena."Game")) {
+						$start = $config->get($arena."ToStartime");
+						$start--;
+						$config->set($arena."ToStartime", $start);
+                                                $config->save();
 				
 				    foreach($players as $pl) {
 				      // 10 seconds until game starting
