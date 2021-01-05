@@ -192,3 +192,115 @@ class Settings {
     $pl->sendMessage(TE::DARK_RED.TE::BOLD." [☆5] ".$this->loadTops(5,6));
     $pl->sendMessage(TE::GREEN.TE::BOLD."========================");
     }
+	
+  public function hasPlayers(string $arena,string $name = null) {
+      if(isset($this->players[$arena])) {
+		$d = $this->players[$arena];
+	          return $d;
+      } 
+  }
+	
+  public function hasArenaCountSpec(string $arena,string $name = null) {
+     if(isset($this->spectators[$arena])) {
+	$d = count($this->spectators[$arena]);
+	return $d;
+     } 
+  }
+	
+  public function hasPlayersSpec(string $arena,string $name = null) {
+     if(isset($this->spectators[$arena])) {
+	$d = $this->spectators[$arena];
+	return $d;
+     } 
+
+  }
+	
+  public function getArenas() {
+     $arena = $this->plugin->arenas;
+	return $arena;
+
+
+  }
+	
+  public function kickGame(string $name,string $arena = "Speed") {
+    if(isset($this->players[$arena][$name])) {
+       $pl = $this->plugin->getServer()->getPlayer($name);
+	 if($pl instanceof Player) {
+            if($pl->isOnline()){
+                $pl->getInventory()->clearAll();              
+                $this->delKill($pl->getName());  
+                $pl->setImmobile(false);
+                $pl->setGamemode(3); 
+                } 
+	     }
+	    unset($this->players[$arena][$name]);
+	   } 
+   }
+	
+   public function setKiller(string $name) {
+	$this->kills[$name] = 0;
+   }
+
+   public function addKill(string $name) {
+	$this->setKill($name);
+	if(isset($this->kills[$name])) {
+	$this->kills[$name] += 1;
+	} else {
+	$this->kills[$name] = 1;
+	}
+  }
+	
+  public function getKill(string $name) : int {
+      if(isset($this->kills[$name])) {
+	 $e = $this->kills[$name];
+	  return $e;
+	  } else {
+	   return 0;
+      }
+  }
+	
+  public function delKill(string $name) {
+     if(isset($this->kills[$name])) {
+	unset($this->kills[$name]);
+     }
+
+  }
+
+  public function getWins(string $name) {
+      $tops = new Config($this->plugin->getDataFolder() . "/Wins.yml", Config::YAML);
+      $get = $tops->get($name) == null ? 0 : $tops->get($name);
+      return $get;
+  }
+
+  public function setWins(string $name) {
+      $tops = new Config($this->plugin->getDataFolder() . "/Wins.yml", Config::YAML);
+      $tops->set($name,$tops->get($name) + 1);
+      $tops->save();
+  }
+
+  public function setKill(string $name) {
+     $tops = new Config($this->plugin->getDataFolder() . "/Kills.yml", Config::YAML);
+     $tops->set($name,$tops->get($name) + 1);
+     $tops->save();
+  }
+	
+  public function getKills(string $name) {
+      $tops = new Config($this->plugin->getDataFolder() . "/Kills.yml", Config::YAML);
+      $c = $tops->get($name) == null ? "§cNoData" : $tops->get($name);
+      return $c;
+  }
+
+  public function getLost(string $name) {
+	$lost = new Config($this->plugin->getDataFolder() . "/Lost.yml", Config::YAML);
+	$get = $lost->get($name) == null ? "§cSinDatos" : $lost->get($name);
+        return $get;
+  }
+
+  public function setLost(string $name) {
+	$lost = new Config($this->plugin->getDataFolder() . "/Lost.yml", Config::YAML);
+	$lost->set($name,$lost->get($name) + 1);
+	$lost->save();
+  }
+	
+
+
