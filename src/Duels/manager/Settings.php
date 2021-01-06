@@ -302,5 +302,204 @@ class Settings {
 	$lost->save();
   }
 	
+  public function setBlockSign(int $color = 3,string $world) : void {
+   	$level = $this->plugin->getServer()->getDefaultLevel();
+	$tiles = $level->getTiles();
+	foreach($tiles as $t) {
+	   if($t instanceof Sign) {	
+	      $text = $t->getText();
+		if($text[0]==self::SIGN_PREFIX_TOSTART || $text[0]==self::SIGN_PREFIX_TELEPORT || $text[0]==self::SIGN_PREFIX_START || $text[0]==self::SIGN_PREFIX_END) {
+		   $map = str_replace([self::SIGN_MAP_1,self::SIGN_MAP_2,self::SIGN_MAP_3,self::SIGN_MAP_4],"",$text[2]);
+		   if($map==$world) {
+		      $bll = new Config($this->plugin->getDataFolder() . "Maps/$mapa.yml", Config::YAML);
+                      $sign = $bll->get("Sign");
+                      $ups = $dire[3]==null ? 0 : $sign[3];
+		      if($ups==0) {
+                         $t->getLevel()->setBlock($t->add(1,0,0), Block::get(241,$color), false,false);
+                         } else if($ups==1) {
+                         $t->getLevel()->setBlock($t->add(0,0,1), Block::get(241,$color), false,false);
+                         } else if($ups==2) {
+                         $t->getLevel()->setBlock($t->add(-1,0,0), Block::get(241,$color), false,false);
+                         } else if($ups==3) {
+                         $t->getLevel()->setBlock($t->add(0,0,-1), Block::get(241,$color), false,false);
+                      } 
+
+       }    }
+
+      } }
+  }
+  
+  public function setWorldGame() {
+      $config = new Config($this->plugin->getDataFolder()."/config.yml", Config::YAML);
+      if($config->get("arenas")!=null) { 
+	 $this->plugin->arenas = $config->get("arenas");
+         $this->plugin->getServer()->getLogger()->notice("§l§bAll maps are full!!"); 
+         } else { 
+	      $this->plugin->getServer()->getLogger()->notice("§l§cNo more maps available!"); }
+	      foreach($this->plugin->arenas as $name) { 
+		if($name=="world") continue;
+                   $this->reloadMap($name);
+                   $this->setBlockSign(5,$name);
+                   $config->set($name."Game",self::GAME_STATUS_DEFAULT);
+                   $config->set($name. "ToStartime", self::TIME_TO_START_1);
+                   $config->set($name. "TeleportTime", self::TIME_TELEPORT_2);
+                   $config->set($name. "PlayTime", self::TIME_START_3);
+                   $config->set($name."EndTime", self::TIME_END_4);
+		   $config->save();
+                }
+		$config->save();
+  }
+	
+  public function reloadMap($lev) {
+      if ($this->plugin->getServer()->isLevelLoaded($lev)) {
+           $this->plugin->getServer()->unloadLevel($this->plugin->getServer()->getLevelByName($lev)); }
+           $zip = new \ZipArchive;
+           $zip->open($this->plugin->getDataFolder() . 'arenas/' . $lev . '.zip');
+           $zip->extractTo($this->plugin->getServer()->getDataPath() . 'worlds');
+           $zip->close();
+           unset($zip);
+           $rgb = ["§b","§3","§e"];
+           $this->plugin->getServer()->getLogger()->notice("§l§bCargando mapas§f: ".$rgb[mt_rand(0,2)].$lev);
+           $this->plugin->getServer()->loadLevel($lev);
+	  return true;
+  }
+	
+  public function setTime(int $value) {
+      $v = $value;
+      $reddi = $v % 60;
+      $jacket = ($v - $reddi) / 60;
+      $valup = $jacket % 60;
+      $s = str_pad($reddi, 2, "0", STR_PAD_LEFT);
+      $m = str_pad($valup, 2, "0", STR_PAD_LEFT);
+      return TE::WHITE.$m." §8:§f ".$s;	
+  }
+	
+  public function setSegs(int $value) {
+      $v = $value;
+      $reddi = $v % 60;
+      $jacket = ($v - $reddi) / 60;
+      $valup = $jacket % 60;
+      $s = str_pad($reddi, 2, "0", STR_PAD_LEFT);
+      $m = str_pad($valup, 2, "0", STR_PAD_LEFT);
+      return $s;	
+  }
+	
+  public function setColorBoss(int $game = 0) : string {
+      switch($game) {
+	  case self::PRE_TO_START_1:
+	  return self::BOSS_COLOR_1;
+	  break;
+	  case self::PRE_TELEPORT_2:
+	  return self::BOSS_COLOR_2;
+	  break;
+	  case self::PRE_START_3:
+	  return self::BOSS_COLOR_3;
+	  break;
+	  case self::PRE_END_4:
+	  return self::BOSS_COLOR_4;
+	  break;
+          default:
+	  return self::BOSS_COLOR_1;
+	  break;	
+      }
+  }
+  // The code where I always screw up so CHECK HERE ALWAYS WEATHER	
+  public function getTopsKills() {
+      $tops = new Config($this->plugin->getDataFolder().'/Wins.yml', Config::YAML);
+      if($tops->getAll()!=null){
+          $all = $tops->getAll();
+          $tt = 1;
+          arsort($all);
+          $p = []; $s = []; $t = []; $c = []; $ci = [];
+          foreach($all as $users => $tops){
+               if($tt==1) { $p[$users] = $tops; }  
+               if($tt==2) { $s[$users] = $tops; }
+               if($tt==3) { $t[$users] = $tops; }
+               if($tt==4) { $c[$users] = $tops; }
+               if($tt==5) { $ci[$users] = $tops; } $tt++; if($tt==6) break; }
+               $maxp = $p == null ? 0 : max($p);
+               $topp = array_search($maxp, $p) == null ? TE::RED.self::SLOT_TOP : array_search($maxp, $p);
+               $maxs = $s == null ? 0 : max($s);
+               $tops = array_search($maxs, $s) == null ? TE::RED.self::SLOT_TOP : array_search($maxs, $s);
+               $maxt = $t == null ? 0 : max($t);
+               $topt= array_search($maxt, $t) == null ? TE::RED.self::SLOT_TOP : array_search($maxt, $t);
+               $maxc = $c == null ? 0 : max($c);
+               $topc = array_search($maxc, $c) == null ? TE::RED.self::SLOT_TOP : array_search($maxc, $c);
+               $maxci = $ci == null ? 0 : max($ci);
+               $topci = array_search($maxci, $ci) == null ? TE::RED.self::SLOT_TOP : array_search($maxci, $ci);
+               return self::TITLE_TOPS."\n".
+               TE::WHITE."[".TE::GRAY."#1".TE::WHITE."] ".TE::AQUA.$topp.self::FIGURE_COLOR[mt_rand(0,2)]." .----- ".self::FIGURE.TE::GREEN.$maxp."\n".
+               TE::WHITE."[".TE::GRAY."#2".TE::WHITE."] ".TE::AQUA.$tops.self::FIGURE_COLOR[mt_rand(0,2)]." .----- ".self::FIGURE.TE::GREEN.$maxs."\n".
+               TE::WHITE."[".TE::GRAY."#3".TE::WHITE."] ".TE::AQUA.$topt.self::FIGURE_COLOR[mt_rand(0,2)]." .----- ".self::FIGURE.TE::GREEN.$maxt."\n".
+               TE::WHITE."[".TE::GRAY."#4".TE::WHITE."] ".TE::AQUA.$topc.self::FIGURE_COLOR[mt_rand(0,2)]." .----- ".self::FIGURE.TE::GREEN.$maxc."\n".
+               TE::WHITE."[".TE::GRAY."#5".TE::WHITE."] ".TE::AQUA.$topci.self::FIGURE_COLOR[mt_rand(0,2)]." .----- ".self::FIGURE.TE::GREEN.$maxci."\n";       
+	} else {
+		return self::WIN_NOT;
+      }
+  }
+  
+  public function getTopsDuels(bool $nice = true) {
+	   if(true==$nice) {
+	     self::$TITLE_TOPS = "§f§l|§7|§f|§7|§7|§aDuels§f|§7|§f|§7|§f|\n§l§3Leaderboard Game §aWins";
+             $tops = new Config($this->plugin->getDataFolder().'/Wins.yml', Config::YAML);
+             } else if(false==$nice) {
+            self::$TITLE_TOPS = "§f§l|§7|§f|§7|§7|§bSkyWars§f|§7|§f|§7|§f|\n§l§3Leaderboard Game §bkills";
+            $tops = new Config($this->plugin->getDataFolder().'/Kills.yml', Config::YAML);
+	    }
+            if($tops->getAll()!=null){
+            $all = $tops->getAll();
+              $tt = 1;
+              arsort($all);
+              $p = []; $s = []; $t = []; $c = []; $ci = []; $ce = []; $cie = []; $och = [];
+              foreach($all as $users => $tops){
+              if($tt==1) { $p[$users] = $tops; }  
+              if($tt==2) { $s[$users] = $tops; }
+              if($tt==3) { $t[$users] = $tops; }
+              if($tt==4) { $c[$users] = $tops; }
+              if($tt==5) { $ci[$users] = $tops; }
+              if($tt==6) { $ce[$users] = $tops; }
+              if($tt==7) { $cie[$users] = $tops; }
+              if($tt==8) { $och[$users] = $tops; } $tt++; if($tt==9) break; }
+              $maxp = $p == null ? 0 : max($p);
+              $topp = array_search($maxp, $p) == null ? TE::RED.self::SLOT_TOP : array_search($maxp, $p);
+              $maxs = $s == null ? 0 : max($s);
+              $tops = array_search($maxs, $s) == null ? TE::RED.self::SLOT_TOP : array_search($maxs, $s);
+              $maxt = $t == null ? 0 : max($t);
+              $topt= array_search($maxt, $t) == null ? TE::RED.self::SLOT_TOP : array_search($maxt, $t);
+              $maxc = $c == null ? 0 : max($c);
+              $topc = array_search($maxc, $c) == null ? TE::RED.self::SLOT_TOP : array_search($maxc, $c);
+              $maxci = $ci == null ? 0 : max($ci);
+              $topci = array_search($maxci, $ci) == null ? TE::RED.self::SLOT_TOP : array_search($maxci, $ci);
+              $maxce = $ce == null ? 0 : max($ce); 
+              $topce = array_search($maxce, $ce) == null ? TE::RED.self::SLOT_TOP : array_search($maxce, $ce);
+              $maxcie = $cie == null ? 0 : max($cie);
+              $topcie = array_search($maxcie, $cie) == null ? TE::RED.self::SLOT_TOP : array_search($maxcie, $cie);
+              $maxoch = $och == null ? 0 : max($och);
+              $topoch = array_search($maxoch, $och) == null ? TE::RED.self::SLOT_TOP : array_search($maxoch, $och);
+              return self::$TITLE_TOPS."\n".
+              TE::WHITE."[".TE::AQUA."#1".TE::WHITE."] ".TE::AQUA.$topp.self::FIGURE_COLOR[mt_rand(0,2)]." .----- ".self::FIGURE.TE::GREEN.$maxp."\n".
+              TE::WHITE."[".TE::GOLD."#2".TE::WHITE."] ".TE::AQUA.$tops.self::FIGURE_COLOR[mt_rand(0,2)]." .----- ".self::FIGURE.TE::GREEN.$maxs."\n".
+              TE::WHITE."[".TE::GOLD."#3".TE::WHITE."] ".TE::AQUA.$topt.self::FIGURE_COLOR[mt_rand(0,2)]." .----- ".self::FIGURE.TE::GREEN.$maxt."\n".
+              TE::WHITE."[".TE::GOLD."#4".TE::WHITE."] ".TE::AQUA.$topc.self::FIGURE_COLOR[mt_rand(0,2)]." .----- ".self::FIGURE.TE::GREEN.$maxc."\n".
+              TE::WHITE."[".TE::RED."#5".TE::WHITE."] ".TE::AQUA.$topci.self::FIGURE_COLOR[mt_rand(0,2)]." .----- ".self::FIGURE.TE::GREEN.$maxci."\n".
+              TE::WHITE."[".TE::RED."#6".TE::WHITE."] ".TE::AQUA.$topce.self::FIGURE_COLOR[mt_rand(0,2)]." .----- ".self::FIGURE.TE::GREEN.$maxce."\n".
+              TE::WHITE."[".TE::RED."#7".TE::WHITE."] ".TE::AQUA.$topoch.self::FIGURE_COLOR[mt_rand(0,2)]." .----- ".self::FIGURE.TE::GREEN.$maxcie."\n".
+              TE::WHITE."[".TE::RED."#8".TE::WHITE."] ".TE::AQUA.$topoch.self::FIGURE_COLOR[mt_rand(0,2)]." .----- ".self::FIGURE.TE::GREEN.$maxoch."\n";       
+	   } else {
+		return self::WIN_NOT;
+		}                     
+  }	
+}
+
+	
+
+	
+  
+
+
+	
+
+
+	
 
 
